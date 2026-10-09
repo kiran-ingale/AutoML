@@ -12,39 +12,41 @@ Create the training engine responsible for model selection, orchestration, and j
 ## Step-by-step
 
 ### Step 1: Define experiment and job model
-- Add experiment tracking records
-- Capture configuration such as task type, target column, and model options
-- Record status history for each task
+- [x] Reuse the run record as the local training-job record.
+- [x] Persist task type, target, metric, split options, engine, preset, and attempt ID.
+- [x] Persist current status and failure stage/message.
+- [ ] Add separate experiment records and append-only status history.
 
 ### Step 2: Build the execution runner
-- Create a service that launches model training jobs
-- Add queueing logic or single-run orchestration for local use
-- Handle cancellation or failure states gracefully
+- [x] Add a local FastAPI background-task runner with duplicate-start protection.
+- [x] Persist queued, running, succeeded, and failed states.
+- [x] Allow a failed run to be retried as a new attempt.
+- [ ] Add durable queueing and cancellation support (for example, Celery/Redis).
 
 ### Step 3: Integrate ML framework selection
-- Use AutoGluon as the primary engine
-- Add support for alternate strategies such as FLAML, XGBoost, LightGBM, or CatBoost
-- Keep configuration flexible for future algorithm comparisons
+- [x] Integrate AutoGluon Tabular as the initial engine.
+- [x] Infer AutoGluon binary versus multiclass problem type from the training target.
+- [x] Force CPU execution and use a held-out validation split.
+- [ ] Add alternate engines and cross-engine comparisons.
 
 ### Step 4: Manage configuration options
-- Accept time constraints, metric preferences, and target settings
-- Validate inputs before starting model execution
-- Save execution config with experiment metadata
+- [x] Validate target, task type, metric, time limit, test size, and random state.
+- [x] Save the validated request and engine settings with the run.
 
 ### Step 5: Persist artifacts
-- Save trained model objects or references
-- Store model metadata, leaderboard output, and result files
-- Retain the source dataset and preprocessing configuration for traceability
+- [x] Save the trained model and leaderboard under an attempt-specific storage directory.
+- [x] Persist model/leaderboard artifact references, selected model, and leaderboard.
+- [x] Retain the uploaded dataset and preprocessing summary for traceability.
 
 ### Step 6: Monitor and handle runtime failures
-- Capture logs during training
-- Report partial results or failed attempts clearly
-- Re-run or debug failed jobs without losing context
+- [x] Log training failures and persist their stage and safe error message.
+- [x] Expose status, preprocessing details, leaderboard, artifacts, and failures through run endpoints.
+- [x] Permit retry after failure while retaining attempt-specific output paths.
+- [ ] Add cancellation, progress events, and durable status history.
 
 ## Deliverables
-- Experiment/job orchestration pipeline
-- AutoML execution service
-- Model artifact and status persistence
+- [x] Local training orchestration service and AutoGluon execution adapter.
+- [x] Training API, persisted status/configuration/results, and artifact references.
 
 ## Exit Criteria
-Users can create an experiment, launch model training, and retrieve stored results or failure details reliably.
+Users can launch training for an uploaded run and retrieve its status, results, artifact references, or failure details. Verified with mocked lifecycle/API tests and a real CPU-only AutoGluon classification smoke run. The local FastAPI background task is not a durable production queue.

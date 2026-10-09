@@ -35,10 +35,15 @@ def check_database_connection() -> None:
 
 
 def get_db() -> Generator[Session, None, None]:
-    session_factory = sessionmaker(
+    session_factory = get_session_factory()
+    with session_factory() as session:
+        yield session
+
+
+@lru_cache
+def get_session_factory() -> sessionmaker[Session]:
+    return sessionmaker(
         bind=get_database_engine(),
         autoflush=False,
         autocommit=False,
     )
-    with session_factory() as session:
-        yield session

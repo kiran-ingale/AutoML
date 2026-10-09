@@ -58,28 +58,32 @@ This project is structured to provide:
 - black
 - mypy
 
-## Repository Structure
+## Current Repository Structure
 
 ```text
 .
 ├── backend/
 │   ├── app/
+│   │   ├── api/
+│   │   ├── core/
+│   │   ├── models/
+│   │   ├── pipeline/
+│   │   ├── schemas/
+│   │   └── services/
 │   ├── alembic/
-│   ├── requirements.txt
-│   └── ...
-├── frontend/
-│   ├── package.json
-│   └── src/
-├── docs/
-│   ├── prd.md
-│   ├── architecture.md
-│   ├── rules.md
-│   └── phases.md
+│   └── tests/
+├── modules/
 ├── .env.example
-├── docker-compose.yml
+├── alembic.ini
+├── requirements.txt
 ├── README.md
-└── memory.md
+├── architecture.md
+├── phases.md
+├── prd.md
+└── rules.md
 ```
+
+The frontend is planned but has not been scaffolded yet.
 
 ## Environment Setup
 
@@ -87,35 +91,54 @@ This project is structured to provide:
 
 - Python 3.10+
 - PostgreSQL 15+
-- Docker and Docker Compose
 - Git
-- Node.js and npm for the frontend
+- Node.js and npm when starting frontend work
+- Docker and Docker Compose for containerized development/deployment
 
 ### Python dependencies
 
 Install the required Python packages:
 
 ```bash
-pip install -r requirements.txt
-```
-
-If needed, install additional platform-specific packages such as build tools and native ML dependencies as described in the project documentation.
-
-### Frontend dependencies
-
-```bash
-cd frontend
-npm install
+.\myenv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 ### Configuration
 
-Create a `.env` file based on the required project environment variables, including:
+Create a local `.env` file based on `.env.example`. Configure:
 
 - `DATABASE_URL`
-- `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`
-- storage configuration
-- model runtime settings
+- `STORAGE_DIR` (defaults to `storage`)
+- `MAX_UPLOAD_BYTES` (defaults to 50 MiB)
+
+Keep `.env` and its secrets out of version control.
+
+### Run the backend
+
+Apply database migrations, then start FastAPI from the project root:
+
+```powershell
+.\myenv\Scripts\python.exe -m alembic upgrade head
+.\myenv\Scripts\python.exe -m uvicorn backend.app.main:app --reload
+```
+
+Open `http://127.0.0.1:8000/docs` to try the API. `POST /runs` accepts a `.csv` file and a task `description`, then returns the run ID and dataset profile. `/health` checks that the API is responding; `/ready` also checks PostgreSQL connectivity.
+
+### Train an AutoML model
+
+Start training for an uploaded run with `POST /runs/{run_id}/train`:
+
+```json
+{
+  "target_column": "target",
+  "task_type": "classification",
+  "time_limit_seconds": 60,
+  "test_size": 0.2,
+  "random_state": 42
+}
+```
+
+The API returns `202 Accepted` with the queued run. Poll `GET /runs/{run_id}` for its status, preprocessing summary, leaderboard, selected model, and any failure details. Retrieve persisted model and leaderboard artifact references with `GET /runs/{run_id}/artifacts`. The current AutoGluon runner uses CPU only. Training runs as an in-process FastAPI background task, so it is suitable for local development but is not a durable distributed job queue.
 
 ## Typical Workflow
 
@@ -137,10 +160,11 @@ This project is intended to evolve through phased implementation as described in
 
 The project includes core design and planning documents:
 
-- `docs/prd.md` — product requirements
-- `docs/architecture.md` — architecture overview
-- `docs/rules.md` — coding and build rules
-- `docs/phases.md` — phased implementation roadmap
+- `prd.md` — product requirements
+- `architecture.md` — architecture overview
+- `rules.md` — coding and build rules
+- `phases.md` — phased implementation roadmap
+- `IMPLEMENTATION_PLAN.md` — end-to-end implementation plan
 
 ## License
 
@@ -148,4 +172,4 @@ This project does not currently declare a license. Add a license file if you pla
 
 ## Status
 
-This repository is in the initialization and implementation planning stage. Core dependencies and project scaffolding are being prepared before active feature development.
+Backend foundation, PostgreSQL persistence, CSV upload/profiling, reproducible train/validation preprocessing, and CPU-only AutoGluon training orchestration are implemented. Explainability, the frontend, durable distributed job execution, end-to-end testing, and deployment remain future work.

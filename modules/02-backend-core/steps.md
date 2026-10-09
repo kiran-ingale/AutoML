@@ -4,8 +4,7 @@
 Build the reusable backend foundation and enable the application to start cleanly.
 
 ## Progress
-- [x] Steps 1-5: application structure, settings, FastAPI bootstrap, health endpoints, and base validation/error handling
-- [ ] Step 6: database wiring is implemented; add the local `DATABASE_URL` and verify `/ready`
+- [x] Steps 1-6: application structure, settings, FastAPI bootstrap, health endpoints, base validation/error handling, and PostgreSQL connection verification
 
 ## Goals
 - Create the app structure
@@ -42,7 +41,7 @@ Build the reusable backend foundation and enable the application to start cleanl
 ### Step 6: Connect to the database layer
 - [x] Initialize DB sessions and config objects
 - Prepare app wiring for future models and migrations
-- [ ] Add local database configuration and verify the database readiness endpoint
+- [x] Add local database configuration and verify PostgreSQL connectivity
 
 ## Deliverables
 - Backend application entry point
