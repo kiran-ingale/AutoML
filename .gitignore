@@ -1,6 +1,7 @@
 .env
 .env.example
 memory.md
+modules/
 .venv/
 myenv/
 __pycache__/
