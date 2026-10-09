@@ -1,0 +1,16 @@
+.env
+memory.md
+.venv/
+myenv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.log
+
+# Local model outputs and uploaded datasets
+storage/
+artifacts/
