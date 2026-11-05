@@ -1,6 +1,6 @@
-# AutoML-KBP
+# Adaptive AutoML: An Intelligent Router for TFM and GBDT Routing
 
-AutoML-KBP is a platform for automated machine learning workflows focused on knowledge-base and tabular data processing. It is designed to support dataset ingestion, automated model selection, training orchestration, explainability, and deployment-ready ML pipelines.
+Adaptive AutoML: An Intelligent Router for TFM and GBDT Routing is a platform for tabular machine learning that routes tasks between traditional gradient-boosted decision tree (GBDT) pipelines and tabular foundation models (TFMs), based on dataset characteristics and task requirements.
 
 ## Overview
 

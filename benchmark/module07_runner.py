@@ -147,7 +147,7 @@ def _load_dataset(spec: dict[str, Any]) -> tuple[pd.DataFrame, str, dict[str, An
             raise
         archive_url = "https://archive.ics.uci.edu/static/public/236/seeds.zip"
         request = urllib.request.Request(
-            archive_url, headers={"User-Agent": "AutoML-KBP-Module07/1.0"}
+            archive_url, headers={"User-Agent": "Adaptive-AutoML-TFM-GBDT-Routing-Module07/1.0"}
         )
         with urllib.request.urlopen(request, timeout=60) as response:
             archive_bytes = response.read()
