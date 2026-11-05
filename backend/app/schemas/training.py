@@ -9,6 +9,9 @@ RegressionMetric = Literal[
     "r2",
 ]
 EvaluationMetric = ClassificationMetric | RegressionMetric
+ModelPathOverride = Literal["gbdt", "tfm"]
+TrainingPriority = Literal["accuracy", "speed", "explainability"]
+HardwareConstraint = Literal["auto", "cpu_only"]
 CLASSIFICATION_METRICS = {"accuracy", "f1", "roc_auc", "log_loss"}
 REGRESSION_METRICS = {
     "root_mean_squared_error",
@@ -26,6 +29,9 @@ class TrainingRequest(BaseModel):
     test_size: float = Field(default=0.2, gt=0, lt=0.5)
     random_state: int = Field(default=42, ge=0, le=2**32 - 1)
     evaluation_metric: EvaluationMetric | None = None
+    priority: TrainingPriority = "accuracy"
+    hardware_constraint: HardwareConstraint = "auto"
+    path_override: ModelPathOverride | None = None
 
     @model_validator(mode="after")
     def validate_metric_for_task(self) -> "TrainingRequest":

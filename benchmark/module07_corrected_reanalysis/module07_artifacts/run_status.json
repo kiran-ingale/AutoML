@@ -1,0 +1,36 @@
+{
+  "run_completed_at_utc": "2026-10-31T15:18:03Z",
+  "run_mode": "full",
+  "dataset_manifest_task_groups": 20,
+  "loaded_task_groups": 20,
+  "evaluated_task_groups": 20,
+  "seeds": [
+    17,
+    42,
+    2026
+  ],
+  "outer_evaluation_count": 60,
+  "candidate_attempt_count": 360,
+  "candidate_success_count": 324,
+  "candidate_failure_or_exclusion_count": 36,
+  "selected_route_success_count": 60,
+  "selected_route_completion_rate": 1.0,
+  "route_engine_counts": {
+    "autogluon_cpu": 46,
+    "tabpfn_cuda": 11,
+    "tabicl_cuda": 3
+  },
+  "route_family_counts": {
+    "gbdt": 46,
+    "tfm": 14
+  },
+  "seed_attempt_directories": {
+    "17": "/kaggle/working/module07_full_resume/seed_17/attempt_01",
+    "42": "/kaggle/working/module07_full_resume/seed_42/attempt_01",
+    "2026": "/kaggle/working/module07_full_resume/seed_2026/attempt_01"
+  },
+  "auto_gluon_budget_seconds": 45,
+  "note": "Time-limited revised run; interpret with the recorded 45-second fit budget.",
+  "postprocessed_at_utc": "2026-10-31T15:24:09.919167+00:00",
+  "postprocessing_note": "Routes and outer metrics corrected from saved candidate fits; no model refits performed."
+}

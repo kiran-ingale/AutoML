@@ -1,7 +1,7 @@
 import logging
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID, uuid4
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -11,6 +11,12 @@ from backend.app.core.config import get_settings
 from backend.app.models import Artifact, Run
 from backend.app.pipeline.gbdt_path import TrainingError, train_autogluon
 from backend.app.pipeline.preprocessing import PreprocessingError
+from backend.app.pipeline.router import (
+    RoutingError,
+    detect_router_capabilities,
+    route_training,
+)
+from backend.app.pipeline.tfm_path import train_tfm
 from backend.app.repositories import get_run
 from backend.app.schemas.training import TrainingRequest
 from backend.app.services.datasets import dataset_path_for_run
@@ -54,13 +60,30 @@ def queue_training(
     if not dataset_path.is_file():
         raise TrainingDataError("Stored dataset file is missing.")
 
+    try:
+        route = route_training(
+            profile=run.profile or {},
+            target_column=request.target_column,
+            task_type=request.task_type,
+            test_size=request.test_size,
+            priority=request.priority,
+            hardware_constraint=request.hardware_constraint,
+            path_override=request.path_override,
+            capabilities=detect_router_capabilities(),
+        )
+    except RoutingError as exc:
+        raise TrainingDataError(str(exc)) from exc
+
     run.status = "queued"
     run.training_config = {
         **request.model_dump(mode="json"),
         "attempt_id": str(uuid4()),
-        "engine": "autogluon.tabular",
-        "presets": "good_quality",
+        "path": route.path,
+        "engine": route.engine,
+        "device": route.device,
+        **({"presets": "good_quality"} if route.path == "gbdt" else {}),
     }
+    run.route = route.as_dict()
     run.leaderboard = None
     run.error_stage = None
     run.error_message = None
@@ -127,14 +150,43 @@ def train_run_background(
             )
 
         current_stage = "training"
-        result = train_autogluon(
-            prepared=prepared,
-            target_column=str(config["target_column"]),
-            task_type=config["task_type"],
-            output_directory=output_directory,
-            time_limit_seconds=int(config["time_limit_seconds"]),
-            evaluation_metric=config.get("evaluation_metric"),
-        )
+        if config["path"] == "gbdt":
+            result = train_autogluon(
+                prepared=prepared,
+                target_column=str(config["target_column"]),
+                task_type=config["task_type"],
+                output_directory=output_directory,
+                time_limit_seconds=int(config["time_limit_seconds"]),
+                evaluation_metric=config.get("evaluation_metric"),
+            )
+        elif config["path"] == "tfm":
+            if config["engine"] == "tabpfn":
+                engine: Literal["tabpfn", "tabicl"] = "tabpfn"
+            elif config["engine"] == "tabicl":
+                engine = "tabicl"
+            else:
+                raise TrainingError(
+                    f"Unknown selected TFM engine {config['engine']!r}."
+                )
+            if config["device"] == "cuda":
+                device: Literal["cpu", "cuda"] = "cuda"
+            elif config["device"] == "cpu":
+                device = "cpu"
+            else:
+                raise TrainingError(
+                    f"Unknown selected TFM device {config['device']!r}."
+                )
+            result = train_tfm(
+                engine=engine,
+                prepared=prepared,
+                task_type=config["task_type"],
+                output_directory=output_directory,
+                evaluation_metric=config.get("evaluation_metric"),
+                random_state=int(config["random_state"]),
+                device=device,
+            )
+        else:
+            raise TrainingError(f"Unknown selected model path {config['path']!r}.")
 
         leaderboard_relative = f"{relative_directory}/leaderboard.csv"
         model_relative = f"{relative_directory}/model"
@@ -144,8 +196,7 @@ def train_run_background(
                 raise TrainingError(f"Run {run_id} was deleted during training.")
             run.leaderboard = result.leaderboard
             run.route = {
-                "path": "gbdt",
-                "engine": "autogluon.tabular",
+                **(run.route or {}),
                 "best_model": result.best_model,
                 "evaluation_metric": result.evaluation_metric,
             }

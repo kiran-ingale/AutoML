@@ -10,7 +10,7 @@ This project is structured to provide:
 - A frontend interface for dataset upload and experiment management
 - A PostgreSQL-backed data layer for metadata and persistence
 - AutoML model training with frameworks such as AutoGluon, XGBoost, LightGBM, CatBoost, and FLAML
-- Explainability through SHAP and related tooling
+- Explainability through SHAP for GBDT and MATLAB-based explainability for tabular foundation models
 - Optional LLM-assisted workflows for analytics and recommendations
 
 ## Project Goals
@@ -43,7 +43,8 @@ This project is structured to provide:
 - LightGBM
 - CatBoost
 - TabPFN / TabICLv2-related tooling (where applicable)
-- SHAP
+- SHAP (GBDT explainability)
+- MATLAB-based explainability (TFM explainability)
 
 ### Frontend
 - React
@@ -113,6 +114,22 @@ Create a local `.env` file based on `.env.example`. Configure:
 
 Keep `.env` and its secrets out of version control.
 
+### TFM readiness configuration
+
+The router distinguishes installed packages from deployment readiness. For a
+TabPFN route, provide `TABPFN_TOKEN` to the backend process through its secret
+store and set `TABPFN_LICENSE_ACCEPTED=true` only after accepting the exact
+checkpoint license in the account used by that token. The readiness check
+records only whether the token is present; it never returns or logs its value.
+For TabICL, review the pinned checkpoint terms and set `TABICL_READY=true`.
+The backend downloads the classifier or regressor checkpoint from revision
+`4dcd344ece2c00be9e831fdd35bed57b5ad83e19` on first use, passes that file to
+TabICL, and verifies the recorded classifier SHA-256. The regressor is fetched
+from the same pinned revision; an independent expected hash is not recorded,
+so its checksum is not claimed as verified. The readiness flag attests to
+terms review; it does not test network access in advance. Leave either flag
+unset/false when the corresponding access is not ready.
+
 ### Run the backend
 
 Apply database migrations, then start FastAPI from the project root:
@@ -134,11 +151,13 @@ Start training for an uploaded run with `POST /runs/{run_id}/train`:
   "task_type": "classification",
   "time_limit_seconds": 60,
   "test_size": 0.2,
-  "random_state": 42
+  "random_state": 42,
+  "priority": "speed",
+  "hardware_constraint": "auto"
 }
 ```
 
-The API returns `202 Accepted` with the queued run. Poll `GET /runs/{run_id}` for its status, preprocessing summary, leaderboard, selected model, and any failure details. Retrieve persisted model and leaderboard artifact references with `GET /runs/{run_id}/artifacts`. The current AutoGluon runner uses CPU only. Training runs as an in-process FastAPI background task, so it is suitable for local development but is not a durable distributed job queue.
+The API returns `202 Accepted` with the queued run and its persisted routing decision. `priority` accepts `accuracy`, `speed`, or `explainability`; `hardware_constraint` accepts `auto` or `cpu_only`; and an optional `path_override` can be `gbdt` or `tfm`. Hard dataset, hardware, and model-readiness gates are applied before route selection. Accuracy defaults to AutoGluon unless applicable validated evidence supports a TFM; speed requires scenario-matched measured end-to-end latency evidence, otherwise it also defaults to AutoGluon. An explicit TFM override selects among eligible TFMs by scale policy, without claiming predictive superiority. Package presence alone does not establish checkpoint/license readiness. A TFM can reduce model-search time, but total runtime depends on dataset size, hardware, and checkpoint availability. `time_limit_seconds` is an AutoGluon search budget; TabPFN and TabICL do not expose the same hard fit-time limit. Poll `GET /runs/{run_id}` for status, route rationale/exclusions, preprocessing summary, leaderboard, selected model, and failure details. Retrieve persisted model and leaderboard artifact references with `GET /runs/{run_id}/artifacts`. Training runs as an in-process FastAPI background task, so it is suitable for local development but is not a durable distributed job queue.
 
 ## Typical Workflow
 
@@ -172,4 +191,8 @@ This project does not currently declare a license. Add a license file if you pla
 
 ## Status
 
-Backend foundation, PostgreSQL persistence, CSV upload/profiling, reproducible train/validation preprocessing, and CPU-only AutoGluon training orchestration are implemented. Explainability, the frontend, durable distributed job execution, end-to-end testing, and deployment remain future work.
+Backend foundation, PostgreSQL persistence, CSV upload/profiling, reproducible train/validation preprocessing, rule-based AutoGluon/TabPFN/TabICL routing, and path-specific training orchestration are implemented. Router and training behavior is covered by unit and mocked integration tests. A real TFM smoke run still requires accessible model weights and any required license acceptance. Explainability, the frontend, durable distributed job execution, end-to-end testing, and deployment remain future work.
+
+## Kaggle GPU router benchmark
+
+The reproducible Kaggle notebook and run instructions are in [`benchmark/README.md`](benchmark/README.md). It runs the router and model paths directly inside Kaggle, records GPU/software metadata and durable raw outputs, and keeps AutoGluon as a CPU-only baseline. The benchmark has **not yet been run**; there are no measured Kaggle results. Dataset licenses and exact TFM checkpoint terms must be verified before the first run. `time_limit_seconds` is not a hard fit timeout for TabPFN or TabICL.

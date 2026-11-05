@@ -1,0 +1,7 @@
+# Kaggle Stage 1 family-routing benchmark
+
+The revised [notebook](kaggle_gpu_benchmark.ipynb) and [runner](module07_runner.py) evaluate a composed two-stage policy: Stage 1 chooses GBDT/AutoGluon versus the TFM family; Stage 2 chooses an eligible TFM if needed. Read the paper-oriented [Stage 1 protocol](MODULE07_PROTOCOL.md) before execution. The primary claim is held-out predictive-quality family routing for this task mix. It does not establish user-preference understanding, explanation quality, or universal speed superiority.
+
+The runner uses grouped leave-one-dataset-out evaluation, nested development-only Stage 2 choices for Stage 1 labels, an interpretable family selector, and shared outer splits for paired candidate comparisons. Pilot mode is for execution health only; use the full mode and frozen budgets for paper estimates. The supplied earlier pilot archive remains unchanged exploratory flat-engine evidence and is not validation of the revised family selector. The older five-task comparison remains in [benchmark_report.md](benchmark_report.md).
+
+Before Kaggle import, regenerate `module07_kaggle_source.zip` from the revised notebook, runner, manifest, requirements, and license notes. Preserve old result archives unchanged. Resolve the protocol's dataset-variant/checkpoint-access audit items before paper reporting. Any TabPFN secret diagnostic must reveal only access success/failure or exception type, never the token.

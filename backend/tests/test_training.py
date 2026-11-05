@@ -15,6 +15,7 @@ from backend.app.core.db import get_db
 from backend.app.main import app
 from backend.app.models import Artifact, Base, Run
 from backend.app.pipeline.gbdt_path import TrainingError, TrainingResult
+from backend.app.pipeline.router import RouterCapabilities
 from backend.app.schemas.training import TrainingRequest
 from backend.app.services import training as training_service
 from backend.app.services.training import (
@@ -22,6 +23,21 @@ from backend.app.services.training import (
     queue_training,
     train_run_background,
 )
+
+
+@pytest.fixture(autouse=True)
+def disable_tfms_for_training_service_tests(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        training_service,
+        "detect_router_capabilities",
+        lambda: RouterCapabilities(
+            tabpfn_available=False,
+            tabicl_available=False,
+            gpu_available=False,
+        ),
+    )
 
 
 @pytest.fixture
@@ -73,6 +89,38 @@ def create_run_with_dataset(
                 id=run_id,
                 dataset_pointer=relative_pointer,
                 status="queued",
+                profile={
+                    "rows": 20,
+                    "columns_count": 3,
+                    "columns": [
+                        {
+                            "name": "number",
+                            "dtype": "int64",
+                            "missing_count": 0,
+                            "missing_percent": 0,
+                            "cardinality": 20,
+                        },
+                        {
+                            "name": "category",
+                            "dtype": "object",
+                            "missing_count": 0,
+                            "missing_percent": 0,
+                            "cardinality": 2,
+                        },
+                        {
+                            "name": "target",
+                            "dtype": "object",
+                            "missing_count": 0,
+                            "missing_percent": 0,
+                            "cardinality": 2,
+                        },
+                    ],
+                    "duplicate_rows": 0,
+                    "target_column_guess": "target",
+                    "target_guess_method": "last_column_heuristic_requires_user_confirmation",
+                    "class_imbalance_ratio": 1.0,
+                    "warnings": [],
+                },
             )
         )
         session.commit()
@@ -136,14 +184,71 @@ def test_background_training_persists_success_and_artifacts(
         run = session.get(Run, run_id)
         assert run is not None
         assert run.status == "succeeded"
-        assert run.route == {
-            "path": "gbdt",
-            "engine": "autogluon.tabular",
-            "best_model": "MockModel",
-            "evaluation_metric": "accuracy",
-        }
+        assert run.route["path"] == "gbdt"
+        assert run.route["engine"] == "autogluon.tabular"
+        assert run.route["best_model"] == "MockModel"
+        assert run.route["evaluation_metric"] == "accuracy"
+        assert "rationale" in run.route
         assert run.leaderboard == [{"model": "MockModel", "score_test": 0.9}]
         assert run.preprocessing["target_column"] == "target"
+        artifacts = session.query(Artifact).filter_by(run_id=run_id).all()
+        assert {artifact.type for artifact in artifacts} == {"model", "leaderboard"}
+        assert all(
+            (storage_dir / artifact.storage_path).exists() for artifact in artifacts
+        )
+
+
+def test_selected_tfm_engine_is_dispatched_and_persisted(
+    database_and_storage: tuple[sessionmaker[Session], Path],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session_factory, storage_dir = database_and_storage
+    run_id = create_run_with_dataset(session_factory, storage_dir)
+    monkeypatch.setattr(
+        training_service,
+        "detect_router_capabilities",
+        lambda: RouterCapabilities(True, True, False),
+    )
+    with session_factory() as session:
+        request = TrainingRequest(
+            target_column="target",
+            task_type="classification",
+            path_override="tfm",
+        )
+        run = queue_training(session, run_id=run_id, request=request)
+        config = dict(run.training_config)
+
+    calls: dict[str, object] = {}
+
+    def fake_train_tfm(**kwargs) -> TrainingResult:
+        calls.update(kwargs)
+        model_path = kwargs["output_directory"] / "model"
+        model_path.mkdir(parents=True)
+        (model_path / "predictor.joblib").write_text("mock model", encoding="utf-8")
+        leaderboard_path = kwargs["output_directory"] / "leaderboard.csv"
+        leaderboard_path.write_text(
+            "model,score_test\nMockTabPFN,0.9\n", encoding="utf-8"
+        )
+        return TrainingResult(
+            model_path=model_path,
+            leaderboard_path=leaderboard_path,
+            leaderboard=[{"model": "MockTabPFN", "score_test": 0.9}],
+            best_model="MockTabPFN",
+            evaluation_metric="accuracy",
+        )
+
+    monkeypatch.setattr(training_service, "train_tfm", fake_train_tfm)
+    train_run_background(session_factory, run_id=run_id, config=config)
+
+    assert calls["engine"] == "tabpfn"
+    assert calls["device"] == "cpu"
+    with session_factory() as session:
+        run = session.get(Run, run_id)
+        assert run is not None
+        assert run.status == "succeeded"
+        assert run.route["path"] == "tfm"
+        assert run.route["engine"] == "tabpfn"
+        assert run.route["best_model"] == "MockTabPFN"
         artifacts = session.query(Artifact).filter_by(run_id=run_id).all()
         assert {artifact.type for artifact in artifacts} == {"model", "leaderboard"}
         assert all(

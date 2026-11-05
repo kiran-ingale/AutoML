@@ -1,0 +1,7 @@
+task,measure,n_independent_dataset_groups,mean,bootstrap_95_ci_low,bootstrap_95_ci_high,unit,interpretation
+classification,selected_completion_rate,15,1.0,1.0,1.0,dataset group after seed aggregation,exploratory held-out dataset estimate
+classification,mean_selected_normalized_regret,15,0.01322839562636613,0.005261550186273593,0.024022773466793327,dataset group after seed aggregation,exploratory held-out dataset estimate
+classification,selected_best_or_tie_rate,15,0.6888888888888888,0.5111111111111112,0.8444444444444444,dataset group after seed aggregation,descriptive comparison to the outer-test oracle
+regression,selected_completion_rate,5,1.0,1.0,1.0,dataset group after seed aggregation,exploratory held-out dataset estimate
+regression,mean_selected_normalized_regret,5,0.07022513393878808,0.03389119902008857,0.09935767576293991,dataset group after seed aggregation,exploratory held-out dataset estimate
+regression,selected_best_or_tie_rate,5,0.2,0.0,0.6,dataset group after seed aggregation,descriptive comparison to the outer-test oracle

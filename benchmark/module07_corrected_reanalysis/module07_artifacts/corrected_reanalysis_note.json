@@ -1,0 +1,12 @@
+{
+  "source_archive": "D:\\module07_artifacts (1).zip",
+  "analysis": "Corrected post-hoc Stage 1 labels and recomputed routes/outer evaluations from saved model-fit records.",
+  "model_fits_repeated": false,
+  "correction": "Rows labeled AutoGluon_validation_*_better or within_tie_tolerance_GBDT_preferred are family_winner=gbdt.",
+  "fit_budget_seconds": 45,
+  "limitations": [
+    "45-second AutoGluon budget differs from the original 300-second protocol.",
+    "TabICL regression checkpoint SHA-256 remains unverified in source provenance.",
+    "Results cover the 20 benchmark task groups and tested software/checkpoint setup only."
+  ]
+}

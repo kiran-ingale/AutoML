@@ -1,0 +1,5 @@
+task,selected_engine,heldout_dataset_seed_count,independent_dataset_group_count
+classification,autogluon_cpu,31,13
+classification,tabicl_cuda,3,3
+classification,tabpfn_cuda,11,7
+regression,autogluon_cpu,15,5

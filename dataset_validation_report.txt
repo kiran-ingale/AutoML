@@ -1,0 +1,168 @@
+Synthetic AutoML Router Dataset — Validation Report
+Generator seed: 20261027
+
+1. Dataset dimensions
+Rows (excluding header): 3000
+Columns (including target): 24
+Target: recommended_model_family
+Input columns: 23
+
+2. Missing values
+n_rows                          0
+n_features                      0
+n_numeric_features              0
+n_categorical_features          0
+missing_value_ratio             0
+class_imbalance_ratio           0
+task_type                       0
+n_classes                       0
+high_cardinality_ratio          0
+hardware_type                   0
+available_ram_gb                0
+latency_requirement_seconds     0
+training_budget_minutes         0
+priority_accuracy               0
+priority_speed                  0
+priority_interpretability       0
+priority_resource_efficiency    0
+requires_probability_output     0
+requires_feature_importance     0
+supports_task                   0
+memory_feasibility              0
+latency_feasibility             0
+training_budget_feasibility     0
+recommended_model_family        0
+
+3. Duplicate scenarios
+Duplicate complete rows: 0
+Duplicate input scenarios: 0
+
+4. Categorical unique-value counts
+task_type: 2 unique
+task_type
+classification    2193
+regression         807
+hardware_type: 2 unique
+hardware_type
+CPU-only         1970
+GPU-available    1030
+recommended_model_family: 3 unique
+recommended_model_family
+GBDT                        2266
+TABULAR_FOUNDATION_MODEL     535
+NO_FEASIBLE_MODEL            199
+
+5. Feature consistency checks
+n_numeric_features + n_categorical_features == n_features: PASS
+n_features positive: PASS
+n_rows >= 100: PASS
+missing_value_ratio in [0, 1]: PASS
+high_cardinality_ratio in [0, 1]: PASS
+classification has n_classes >= 2: PASS
+regression n_classes == 0: PASS
+regression class_imbalance_ratio convention == 1.0: PASS
+feature counts consistent with high-cardinality ratio: PASS
+priorities all in [1, 5]: PASS
+supports_task true for supported supervised tasks: PASS
+
+6. Target-class distribution
+recommended_model_family
+GBDT                        2266
+TABULAR_FOUNDATION_MODEL     535
+NO_FEASIBLE_MODEL            199
+
+No target class is below 5% of rows.
+
+7. Numerical feature distributions (pandas describe)
+            n_rows  n_features  n_numeric_features  n_categorical_features  missing_value_ratio  class_imbalance_ratio  n_classes  high_cardinality_ratio  available_ram_gb  latency_requirement_seconds  training_budget_minutes  priority_accuracy  priority_speed  priority_interpretability  priority_resource_efficiency
+count    3000.0000   3000.0000           3000.0000               3000.0000            3000.0000              3000.0000  3000.0000               3000.0000         3000.0000                    3000.0000                3000.0000          3000.0000       3000.0000                  3000.0000                     3000.0000
+mean    27215.9370     94.3053             61.5853                 32.7200               0.0679                 0.6460    38.1640                  0.4725           36.0328                       0.7783                  39.5265             2.9627          3.0353                     3.0190                        2.9987
+std     44672.0966    118.8573             81.7375                 49.3968               0.0538                 0.3221    63.1701                  0.3504           19.8591                       1.1459                  57.0910             1.4052          1.4038                     1.4111                        1.4019
+min       100.0000      3.0000              0.0000                  0.0000               0.0004                 0.0152     0.0000                  0.0000            2.0300                       0.0100                   0.5020             1.0000          1.0000                     1.0000                        1.0000
+25%       688.0000     11.0000              7.0000                  3.0000               0.0282                 0.3720     0.0000                  0.1429           19.3425                       0.0429                   2.2558             2.0000          2.0000                     2.0000                        2.0000
+50%      4712.5000     38.0000             24.0000                 11.0000               0.0538                 0.6998     5.0000                  0.5000           35.9000                       0.2027                  11.1780             3.0000          3.0000                     3.0000                        3.0000
+75%     31836.7500    137.0000             86.0000                 40.0000               0.0926                 1.0000    50.0000                  0.7778           52.2075                       1.0437                  52.3050             4.0000          4.0000                     4.0000                        4.0000
+max    199960.0000    498.0000            472.0000                326.0000               0.3535                 1.0000   200.0000                  1.0000           79.9900                       4.9863                 239.7400             5.0000          5.0000                     5.0000                        5.0000
+
+8. Target cross-tabulations
+
+recommended_model_family by task_type (row percentages):
+recommended_model_family   GBDT  NO_FEASIBLE_MODEL  TABULAR_FOUNDATION_MODEL
+task_type                                                                   
+classification            0.764              0.064                     0.172
+regression                0.732              0.072                     0.196
+
+recommended_model_family by hardware_type (row percentages):
+recommended_model_family   GBDT  NO_FEASIBLE_MODEL  TABULAR_FOUNDATION_MODEL
+hardware_type                                                               
+CPU-only                  0.885              0.080                     0.035
+GPU-available             0.507              0.041                     0.452
+
+recommended_model_family by priority_accuracy (row percentages):
+recommended_model_family   GBDT  NO_FEASIBLE_MODEL  TABULAR_FOUNDATION_MODEL
+priority_accuracy                                                           
+1                         0.778              0.075                     0.148
+2                         0.782              0.074                     0.144
+3                         0.751              0.081                     0.168
+4                         0.756              0.046                     0.198
+5                         0.705              0.055                     0.239
+
+recommended_model_family by priority_speed (row percentages):
+recommended_model_family   GBDT  NO_FEASIBLE_MODEL  TABULAR_FOUNDATION_MODEL
+priority_speed                                                              
+1                         0.825              0.055                     0.120
+2                         0.764              0.079                     0.157
+3                         0.748              0.081                     0.171
+4                         0.722              0.064                     0.214
+5                         0.723              0.052                     0.225
+
+recommended_model_family by priority_interpretability (row percentages):
+recommended_model_family    GBDT  NO_FEASIBLE_MODEL  TABULAR_FOUNDATION_MODEL
+priority_interpretability                                                    
+1                          0.624              0.075                     0.302
+2                          0.707              0.067                     0.226
+3                          0.794              0.052                     0.154
+4                          0.810              0.078                     0.111
+5                          0.838              0.058                     0.103
+
+recommended_model_family by priority_resource_efficiency (row percentages):
+recommended_model_family       GBDT  NO_FEASIBLE_MODEL  TABULAR_FOUNDATION_MODEL
+priority_resource_efficiency                                                    
+1                             0.771              0.073                     0.155
+2                             0.726              0.063                     0.211
+3                             0.733              0.065                     0.202
+4                             0.768              0.071                     0.161
+5                             0.779              0.060                     0.161
+
+9. Leakage and shortcut audit
+Target excluded from model input feature list: True
+No scenario ID, hidden utility score, rule ID, or generation score is exported.
+Feasibility flags are scenario-level (whether any family meets the named constraint), computed before target selection.
+supports_task means at least one modeled family supports the supervised task; it is true for both task types in this candidate set.
+Exact input duplicates: 0
+Best single-feature categorical shortcut accuracies (descriptive):
+latency_feasibility    0.7960
+task_type              0.7553
+hardware_type          0.7553
+supports_task          0.7553
+memory_feasibility     0.7553
+Depth-3 decision-tree holdout accuracy (synthetic-label learnability probe only): 0.8280
+Majority-class baseline accuracy: 0.7553
+This random-row probe is not a real benchmark or an unbiased estimate of generalization to new datasets.
+Flag: the synthetic rule intentionally creates learnable structure; investigate a probe above 0.98 for direct shortcuts or overly deterministic boundaries.
+Rows are independently sampled; no shared scenario template or template identifier is used.
+Do a grouped split if future revisions introduce templates or repeated base scenarios.
+
+10. Label policy, conflict resolution, and limitations
+Each candidate family is first filtered by synthetic task/row limits, estimated memory, p95 latency, and training-budget feasibility.
+If none remain, the label is NO_FEASIBLE_MODEL. Otherwise a deterministic weighted utility ranks feasible GBDT and tabular foundation model candidates.
+The four priority weights use the same 1–5 scale and are normalized by their sum. Accuracy, speed, interpretability, and resource proxies contribute to utility; deterministic tie-breaking favors GBDT.
+Feature-importance requirements reduce the TFM interpretability proxy. Probability output is only requested for classification; both families are modeled as capable of probabilities there.
+Runtime and memory are hand-designed heuristic estimates, not measurements. Row/feature caps are synthetic application policies, not universal vendor limits.
+Labels encode this declared synthetic policy only. They are not ground truth and do not establish that any family is better, faster, or more resource efficient in practice.
+For real router training, replace or validate labels using measured, paired benchmark runs on identical splits; retain failures and uncertainty, and use development tasks to tune policy before evaluating held-out tasks.
+Latency definition: modeled p95 prediction latency for one batch of 100 prediction rows, in seconds; this is not end-to-end training time.
+Regression convention: class_imbalance_ratio=1.0 (not applicable/balanced sentinel); n_classes=0.
+
+Warnings / interpretation
+All estimates and labels are synthetic. The dataset is suitable only for initial pipeline/software experimentation.

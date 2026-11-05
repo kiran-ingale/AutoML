@@ -1,5 +1,5 @@
 .env
-.env.example
+.env.*
 memory.md
 modules/
 .venv/
@@ -7,11 +7,23 @@ myenv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+benchmark/.pytest-tmp/
 .mypy_cache/
 .ruff_cache/
 .coverage
 htmlcov/
 *.log
+
+# Documents and Markdown, except the project README
+*.doc
+*.docx
+*.md
+!README.md
+*.zip
+
+# Manuscript-generation scripts
+revise_manuscript.py
+edit_revision.py
 
 # Local model outputs and uploaded datasets
 storage/

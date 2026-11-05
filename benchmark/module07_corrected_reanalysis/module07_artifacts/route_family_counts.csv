@@ -1,0 +1,4 @@
+task,selected_family,heldout_dataset_seed_count,independent_dataset_group_count
+classification,gbdt,31,13
+classification,tfm,14,7
+regression,gbdt,15,5
